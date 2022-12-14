@@ -48,10 +48,12 @@ rule build_genome_index:
         Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta.amb",
     benchmark:
         BENCHMARK_FP / "build_genome_index_{genome}.tsv"
+    log:
+        LOG_FP / "build_genome_index_{genome}.log",
     conda:
         "sbx_mapping_env.yml"
     shell:
-        "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input}"
+        "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input} 2>&1 | tee {log}"
 
 
 rule align_to_genome:
@@ -62,6 +64,8 @@ rule align_to_genome:
         temp(MAPPING_FP / "intermediates" / "{genome}" / "{sample}.sam"),
     benchmark:
         BENCHMARK_FP / "align_to_genome_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "align_to_genome_{genome}_{sample}.log",
     params:
         index_fp=Cfg["sbx_mapping"]["genomes_fp"],
     threads: 4
@@ -71,7 +75,8 @@ rule align_to_genome:
         """
         bwa mem -M -t {threads} \
         {params.index_fp}/{wildcards.genome}.fasta \
-        {input.reads} -o {output}
+        {input.reads} -o {output} \
+        2>&1 | tee {log}
         """
 
 
@@ -82,13 +87,16 @@ rule samtools_convert:
         MAPPING_FP / "{genome}" / "{sample}.bam",
     benchmark:
         BENCHMARK_FP / "samtools_convert_{genome}_{sample}.tsv"
+    log:
+        view_log=LOG_FP / "samtools_convert_view_{genome}_{sample}.log",
+        sort_log=LOG_FP / "samtools_convert_sort_{genome}_{sample}.log",
     threads: 4
     conda:
         "sbx_mapping_env.yml"
     shell:
         """
-        samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} | \
-        samtools sort -@ {threads} > {output}
+        samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} 2>&1 | tee {log.view_log} | \
+        samtools sort -@ {threads} -o {output} -O bam 2>&1 | tee {log.sort_log}
         """
 
 
@@ -114,6 +122,8 @@ rule samtools_get_coverage:
         MAPPING_FP / "intermediates" / "{genome}" / "{sample}.csv",
     benchmark:
         BENCHMARK_FP / "samtools_get_coverage_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "samtools_get_coverage_{genome}_{sample}.log",
     conda:
         "sbx_mapping_env.yml"
     script:
@@ -127,10 +137,12 @@ rule samtools_index:
         MAPPING_FP / "{genome}" / "{sample}.bam.bai",
     benchmark:
         BENCHMARK_FP / "samtools_getindex_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "samtools_index_{genome}_{sample}.log",
     conda:
         "sbx_mapping_env.yml"
     shell:
-        "samtools index {input} {output}"
+        "samtools index {input} {output} 2>&1 | tee {log}"
 
 
 rule samtools_mpileup:
@@ -141,10 +153,13 @@ rule samtools_mpileup:
         MAPPING_FP / "{genome}" / "{sample}.raw.bcf",
     benchmark:
         BENCHMARK_FP / "samtools_mpileup_{genome}_{sample}.tsv"
+    log:
+        mpileup_log=LOG_FP / "samtools_mpileup_{genome}_{sample}.log",
+        call_log=LOG_FP / "samtools_mpileup_{genome}_{sample}.log",
     conda:
         "sbx_mapping_env.yml"
     shell:
         """
-        bcftools mpileup -f {input.genome} {input.bam} | \
-        bcftools call -Ob -v -c - > {output}
+        bcftools mpileup -f {input.genome} {input.bam} 2>&1 | tee {log.mpileup_log} | \
+        bcftools call -Ob -v -c -o {output} - 2>&1 | tee {log.call_log}
         """
