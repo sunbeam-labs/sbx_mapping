@@ -1,0 +1,4 @@
+sbx_mapping:
+  genomes_fp: ''
+  threads: 4
+  samtools_opts: ''
