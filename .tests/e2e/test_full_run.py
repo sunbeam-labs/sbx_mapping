@@ -67,18 +67,20 @@ def run_sunbeam(setup):
 
 @pytest.fixture
 def expected_file_list():
-    yield sorted([
-        "random.raw.bcf",
-        "dummybfragilis.bam.bai",
-        "random.bam",
-        "dummybfragilis.raw.bcf",
-        "dummybfragilis.bam",
-        "dummyecoli.raw.bcf",
-        "dummyecoli.bam.bai",
-        "dummyecoli.bam",
-        "random.bam.bai",
-        "coverage.csv",
-    ])
+    yield sorted(
+        [
+            "random.raw.bcf",
+            "dummybfragilis.bam.bai",
+            "random.bam",
+            "dummybfragilis.raw.bcf",
+            "dummybfragilis.bam",
+            "dummyecoli.raw.bcf",
+            "dummyecoli.bam.bai",
+            "dummyecoli.bam",
+            "random.bam.bai",
+            "coverage.csv",
+        ]
+    )
 
 
 def test_full_run(run_sunbeam, expected_file_list):
@@ -106,9 +108,6 @@ def test_benchmarks(run_sunbeam):
 
     filename = os.listdir(benchmarks_fp)[0]
     with open(os.path.join(benchmarks_fp, filename)) as f:
-        rd = csv.reader(f, delimiter='\t')
-        headers = rd[0]
+        rd = csv.DictReader(f, delimiter="\t")
         for r in rd:
-            d = dict(zip(headers, r))
-            
-            assert float(d['cpu_time']) < 0.5
+            assert float(r["cpu_time"]) < 0.5
