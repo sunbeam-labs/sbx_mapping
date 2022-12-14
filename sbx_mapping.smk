@@ -3,12 +3,12 @@
 import sys
 
 sys.stderr.write("Collecting target genomes... ")
-if Cfg['mapping']['genomes_fp'] == Cfg['all']['root']:
+if Cfg['sbx_mapping']['genomes_fp'] == Cfg['all']['root']:
     GenomeFiles = []
     GenomeSegments = {}
 else:
-    GenomeFiles = [f for f in Cfg['mapping']['genomes_fp'].glob('*.fasta')]
-    GenomeSegments = {PurePath(g.name).stem: read_seq_ids(Cfg['mapping']['genomes_fp'] / g) for g in GenomeFiles}
+    GenomeFiles = [f for f in Cfg['sbx_mapping']['genomes_fp'].glob('*.fasta')]
+    GenomeSegments = {PurePath(g.name).stem: read_seq_ids(Cfg['sbx_mapping']['genomes_fp'] / g) for g in GenomeFiles}
 sys.stderr.write("done.\n")
 
 TARGET_MAPPING = [
@@ -37,9 +37,9 @@ rule build_genome_index:
     benchmark:
         BENCHMARK_FP / "build_genome_index_{genome}.tsv"
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     shell:
-        "cd {Cfg[mapping][genomes_fp]} && bwa index {input}"
+        "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input}"
 
 rule align_to_genome:
     input:
@@ -55,7 +55,7 @@ rule align_to_genome:
         index_fp = Cfg['sbx_mapping']['genomes_fp']
     threads: 4
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     shell:
         """
         bwa mem -M -t {threads} \
@@ -72,7 +72,7 @@ rule samtools_convert:
         BENCHMARK_FP / "samtools_convert_{genome}_{sample}.tsv"
     threads: 4
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     shell:
         """
         samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} | \
@@ -98,7 +98,7 @@ rule samtools_get_coverage:
     benchmark:
         BENCHMARK_FP / "samtools_get_coverage_{genome}_{sample}.tsv"
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     script:
         "scripts/samtools_get_coverage.py"
 
@@ -108,7 +108,7 @@ rule samtools_index:
     benchmark:
         BENCHMARK_FP / "samtools_getindex_{genome}_{sample}.tsv"
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     shell:
         "samtools index {input} {output}"
 
@@ -121,7 +121,7 @@ rule samtools_mpileup:
     benchmark:
         BENCHMARK_FP / "samtools_mpileup_{genome}_{sample}.tsv"
     conda:
-        "sbx_mapping.yml"
+        "sbx_mapping_env.yml"
     shell:
         """
         bcftools mpileup -f {input.genome} {input.bam} | \
