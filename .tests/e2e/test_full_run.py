@@ -59,6 +59,6 @@ class FullRunTests(unittest.TestCase):
         )
 
         # Check output
-        self.assertTrue(os.listdir(self.human_genome_fp) == [])
-        self.assertTrue(os.listdir(self.human_copy_genome_fp) == [])
-        self.assertTrue(os.listdir(self.phix174_genome_fp) == [])
+        self.assertEqual(os.listdir(self.human_genome_fp), [])
+        self.assertEqual(os.listdir(self.human_copy_genome_fp), [])
+        self.assertEqual(os.listdir(self.phix174_genome_fp), [])
