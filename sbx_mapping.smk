@@ -150,7 +150,8 @@ rule samtools_mpileup:
         bam=MAPPING_FP / "{genome}" / "{sample}.bam",
         genome=Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta",
     output:
-        MAPPING_FP / "{genome}" / "{sample}.raw.bcf",
+        mpileup_out=temp(MAPPING_FP / "{genome}" / "{sample}.bcf"),
+        call_out=MAPPING_FP / "{genome}" / "{sample}.raw.bcf",
     benchmark:
         BENCHMARK_FP / "samtools_mpileup_{genome}_{sample}.tsv"
     log:
@@ -160,6 +161,6 @@ rule samtools_mpileup:
         "sbx_mapping_env.yml"
     shell:
         """
-        bcftools mpileup -f {input.genome} {input.bam} 2>&1 | tee {log.mpileup_log} | \
-        bcftools call -Ob -v -c -o {output} - 2>&1 | tee {log.call_log}
+        bcftools mpileup -f {input.genome} {input.bam} -o {output.mpileup_out} 2>&1 | tee {log.mpileup_log} && \
+        bcftools call -Ob -v -c -o {output.call_out} {output.mpileup_out} 2>&1 | tee {log.call_log}
         """
