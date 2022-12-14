@@ -37,7 +37,6 @@ class FullRunTests(unittest.TestCase):
         self.output_fp = os.path.join(self.project_dir, "sunbeam_output")
         # shutil.copytree(".tests/data/sunbeam_output", self.output_fp)
 
-
         self.human_genome_fp = os.path.join(self.output_fp, "mapping/human/")
         self.human_copy_genome_fp = os.path.join(self.output_fp, "mapping/human_copy/")
         self.phix174_genome_fp = os.path.join(self.output_fp, "mapping/phix174/")
