@@ -32,16 +32,36 @@ def setup():
         ]
     )
 
-    output_fp = os.path.join(project_dir, "sunbeam_output")
-    # shutil.copytree(".tests/data/sunbeam_output", output_fp)
+    yield temp_dir, project_dir
+
+    shutil.rmtree(temp_dir)
+
+
+@pytest.fixture
+def run_sunbeam(setup):
+    temp_dir, project_dir = setup
+    # Run the test job
+    sp.check_output(
+        [
+            "sunbeam",
+            "run",
+            "--profile",
+            project_dir,
+            "all_mapping",
+            "--directory",
+            temp_dir,
+        ]
+    )
+
+    output_fp = os.path.join(project_dir, "sunbeam_output/")
 
     human_genome_fp = os.path.join(output_fp, "mapping/human/")
     human_copy_genome_fp = os.path.join(output_fp, "mapping/human_copy/")
     phix174_genome_fp = os.path.join(output_fp, "mapping/phix174/")
 
-    yield temp_dir, project_dir, human_genome_fp, human_copy_genome_fp, phix174_genome_fp
+    benchmarks_fp = os.path.join(project_dir, "stats/")
 
-    shutil.rmtree(temp_dir)
+    yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
 
 
 @pytest.fixture
@@ -60,30 +80,31 @@ def expected_file_list():
     ].sort()
 
 
-def test_full_run(setup, expected_file_list):
+def test_full_run(run_sunbeam, expected_file_list):
     (
-        temp_dir,
-        project_dir,
         human_genome_fp,
         human_copy_genome_fp,
         phix174_genome_fp,
-    ) = setup
+        benchmarks_fp,
+    ) = run_sunbeam
     output_files = expected_file_list
-
-    # Run the test job
-    sp.check_output(
-        [
-            "sunbeam",
-            "run",
-            "--profile",
-            project_dir,
-            "all_mapping",
-            "--directory",
-            temp_dir,
-        ]
-    )
 
     # Check output
     assert os.listdir(human_genome_fp).sort() == output_files
     assert os.listdir(human_copy_genome_fp).sort() == output_files
     assert os.listdir(phix174_genome_fp).sort() == output_files
+
+
+def test_benchmarks(run_sunbeam):
+    (
+        human_genome_fp,
+        human_copy_genome_fp,
+        phix174_genome_fp,
+        benchmarks_fp,
+    ) = run_sunbeam
+
+    filename = os.listdir(benchmarks_fp)[0]
+    with open(os.path.join(benchmarks_fp, filename)) as f:
+        for l in f.readlines():
+            print(l)
+    assert len(os.listdir(benchmarks_fp)) == 7
