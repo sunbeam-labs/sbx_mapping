@@ -1,3 +1,4 @@
+import csv
 import os
 import pytest
 import shutil
@@ -66,7 +67,7 @@ def run_sunbeam(setup):
 
 @pytest.fixture
 def expected_file_list():
-    yield [
+    yield sorted([
         "random.raw.bcf",
         "dummybfragilis.bam.bai",
         "random.bam",
@@ -77,7 +78,7 @@ def expected_file_list():
         "dummyecoli.bam",
         "random.bam.bai",
         "coverage.csv",
-    ].sort()
+    ])
 
 
 def test_full_run(run_sunbeam, expected_file_list):
@@ -90,9 +91,9 @@ def test_full_run(run_sunbeam, expected_file_list):
     output_files = expected_file_list
 
     # Check output
-    assert os.listdir(human_genome_fp).sort() == output_files
-    assert os.listdir(human_copy_genome_fp).sort() == output_files
-    assert os.listdir(phix174_genome_fp).sort() == output_files
+    assert sorted(os.listdir(human_genome_fp)) == output_files
+    assert sorted(os.listdir(human_copy_genome_fp)) == output_files
+    assert sorted(os.listdir(phix174_genome_fp)) == output_files
 
 
 def test_benchmarks(run_sunbeam):
@@ -105,6 +106,9 @@ def test_benchmarks(run_sunbeam):
 
     filename = os.listdir(benchmarks_fp)[0]
     with open(os.path.join(benchmarks_fp, filename)) as f:
-        for l in f.readlines():
-            print(l)
-    assert len(os.listdir(benchmarks_fp)) == 7
+        rd = csv.reader(f, delimiter='\t')
+        headers = rd[0]
+        for r in rd:
+            d = dict(zip(headers, r))
+            
+            assert float(d['cpu_time']) < 0.5

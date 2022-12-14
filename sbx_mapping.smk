@@ -155,8 +155,8 @@ rule samtools_mpileup:
     benchmark:
         BENCHMARK_FP / "samtools_mpileup_{genome}_{sample}.tsv"
     log:
-        mpileup_log=LOG_FP / "samtools_mpileup_{genome}_{sample}.log",
-        call_log=LOG_FP / "samtools_mpileup_{genome}_{sample}.log",
+        mpileup_log=LOG_FP / "samtools_mpileup_mpileup_{genome}_{sample}.log",
+        call_log=LOG_FP / "samtools_mpileup_call_{genome}_{sample}.log",
     conda:
         "sbx_mapping_env.yml"
     shell:
