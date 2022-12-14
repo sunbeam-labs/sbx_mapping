@@ -23,6 +23,7 @@ TARGET_MAPPING = [
         genome=GenomeSegments.keys())
 ]
 ruleorder: build_host_index > build_genome_index
+localrules: all_mapping
 
 
 rule all_mapping:
@@ -52,8 +53,7 @@ rule align_to_genome:
         BENCHMARK_FP / "align_to_genome_{genome}_{sample}.tsv"
     params:
         index_fp = Cfg['sbx_mapping']['genomes_fp']
-    threads:
-        Cfg['sbx_mapping']['threads']
+    threads: 4
     conda:
         "sbx_mapping.yml"
     shell:
@@ -70,8 +70,7 @@ rule samtools_convert:
         MAPPING_FP/'{genome}'/'{sample}.bam'
     benchmark:
         BENCHMARK_FP / "samtools_convert_{genome}_{sample}.tsv"
-    threads:
-        Cfg['sbx_mapping']['threads']
+    threads: 4
     conda:
         "sbx_mapping.yml"
     shell:

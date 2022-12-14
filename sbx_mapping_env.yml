@@ -1,4 +1,4 @@
-name: mapping
+name: sbx_mapping
 channels:
   - bioconda
   - conda-forge

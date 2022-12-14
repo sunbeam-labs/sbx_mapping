@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ master, main ]
+  push:
+    branches: [ master, main ]
+  schedule:
+    - cron: "0 13 * * 1"
+
+jobs:  
+  test-e2e:
+    name: Test Extension with Sunbeam
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Test with Sunbeam
+        uses: sunbeam-labs/sbx_test_action@v0
+        with:
+          sunbeam-version: '316-consider-moving-pipeline-components-to-extensions'
+          extension-name: 'sunbeam-labs/sbx_mapping'
+          extension-branch-name: ${{ github.head_ref }}
