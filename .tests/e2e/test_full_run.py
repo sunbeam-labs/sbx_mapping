@@ -6,7 +6,7 @@ import tempfile
 
 
 @pytest.fixture
-def setUp():
+def setup():
     temp_dir = tempfile.mkdtemp()
 
     reads_fp = os.path.abspath(".tests/data/reads/")
