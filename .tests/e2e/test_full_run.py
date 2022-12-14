@@ -1,65 +1,113 @@
+import csv
 import os
+import pytest
 import shutil
 import subprocess as sp
 import tempfile
-import unittest
 
 
-class FullRunTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temp_dir = tempfile.mkdtemp()
+@pytest.fixture
+def setup():
+    temp_dir = tempfile.mkdtemp()
 
-        self.reads_fp = os.path.abspath(".tests/data/reads/")
-        self.genomes_fp = os.path.abspath(".tests/data/hosts/")
+    reads_fp = os.path.abspath(".tests/data/reads/")
+    genomes_fp = os.path.abspath(".tests/data/hosts/")
 
-        self.project_dir = os.path.join(self.temp_dir, "project/")
+    project_dir = os.path.join(temp_dir, "project/")
 
-        sp.check_output(
-            ["sunbeam", "init", "--data_fp", self.reads_fp, self.project_dir]
-        )
+    sp.check_output(["sunbeam", "init", "--data_fp", reads_fp, project_dir])
 
-        self.config_fp = os.path.join(self.project_dir, "sunbeam_config.yml")
+    config_fp = os.path.join(project_dir, "sunbeam_config.yml")
 
-        config_str = f"sbx_mapping: {{genomes_fp: {self.genomes_fp}}}"
+    config_str = f"sbx_mapping: {{genomes_fp: {genomes_fp}}}"
 
-        sp.check_output(
-            [
-                "sunbeam",
-                "config",
-                "modify",
-                "-i",
-                "-s",
-                f"{config_str}",
-                f"{self.config_fp}",
-            ]
-        )
+    sp.check_output(
+        [
+            "sunbeam",
+            "config",
+            "modify",
+            "-i",
+            "-s",
+            f"{config_str}",
+            f"{config_fp}",
+        ]
+    )
 
-        self.output_fp = os.path.join(self.project_dir, "sunbeam_output")
-        # shutil.copytree(".tests/data/sunbeam_output", self.output_fp)
+    yield temp_dir, project_dir
+
+    shutil.rmtree(temp_dir)
 
 
-        self.human_genome_fp = os.path.join(self.output_fp, "mapping/human/")
-        self.human_copy_genome_fp = os.path.join(self.output_fp, "mapping/human_copy/")
-        self.phix174_genome_fp = os.path.join(self.output_fp, "mapping/phix174/")
+@pytest.fixture
+def run_sunbeam(setup):
+    temp_dir, project_dir = setup
+    # Run the test job
+    sp.check_output(
+        [
+            "sunbeam",
+            "run",
+            "--profile",
+            project_dir,
+            "all_mapping",
+            "--directory",
+            temp_dir,
+        ]
+    )
 
-    def tearDown(self):
-        shutil.rmtree(self.temp_dir)
+    output_fp = os.path.join(project_dir, "sunbeam_output/")
 
-    def test_full_run(self):
-        # Run the test job.
-        sp.check_output(
-            [
-                "sunbeam",
-                "run",
-                "--profile",
-                self.project_dir,
-                "all_mapping",
-                "--directory",
-                self.temp_dir,
-            ]
-        )
+    human_genome_fp = os.path.join(output_fp, "mapping/human/")
+    human_copy_genome_fp = os.path.join(output_fp, "mapping/human_copy/")
+    phix174_genome_fp = os.path.join(output_fp, "mapping/phix174/")
 
-        # Check output
-        self.assertTrue(os.listdir(self.human_genome_fp) == [])
-        self.assertTrue(os.listdir(self.human_copy_genome_fp) == [])
-        self.assertTrue(os.listdir(self.phix174_genome_fp) == [])
+    benchmarks_fp = os.path.join(project_dir, "stats/")
+
+    yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
+
+
+@pytest.fixture
+def expected_file_list():
+    yield sorted(
+        [
+            "random.raw.bcf",
+            "dummybfragilis.bam.bai",
+            "random.bam",
+            "dummybfragilis.raw.bcf",
+            "dummybfragilis.bam",
+            "dummyecoli.raw.bcf",
+            "dummyecoli.bam.bai",
+            "dummyecoli.bam",
+            "random.bam.bai",
+            "coverage.csv",
+        ]
+    )
+
+
+def test_full_run(run_sunbeam, expected_file_list):
+    (
+        human_genome_fp,
+        human_copy_genome_fp,
+        phix174_genome_fp,
+        benchmarks_fp,
+    ) = run_sunbeam
+    output_files = expected_file_list
+
+    # Check output
+    assert sorted(os.listdir(human_genome_fp)) == output_files
+    assert sorted(os.listdir(human_copy_genome_fp)) == output_files
+    assert sorted(os.listdir(phix174_genome_fp)) == output_files
+
+
+def test_benchmarks(run_sunbeam):
+    (
+        human_genome_fp,
+        human_copy_genome_fp,
+        phix174_genome_fp,
+        benchmarks_fp,
+    ) = run_sunbeam
+
+    filename = os.listdir(benchmarks_fp)[0]
+    with open(os.path.join(benchmarks_fp, filename)) as f:
+        rd = csv.DictReader(f, delimiter="\t")
+        for r in rd:
+            assert float(r["cpu_time"]) < 0.5
