@@ -41,7 +41,7 @@ def setup():
 @pytest.fixture
 def run_sunbeam(setup):
     temp_dir, project_dir = setup
-    
+
     # Run the test job
     sp.check_output(
         [
@@ -111,4 +111,6 @@ def test_benchmarks(run_sunbeam):
     with open(os.path.join(benchmarks_fp, filename)) as f:
         rd = csv.DictReader(f, delimiter="\t")
         for r in rd:
-            assert float(r["cpu_time"]) < 0.5, f"cpu_time for {r['rule']} is higher than 0.5: {r['cpu_time']}"
+            assert (
+                float(r["cpu_time"]) < 0.5
+            ), f"cpu_time for {r['rule']} is higher than 0.5: {r['cpu_time']}"
