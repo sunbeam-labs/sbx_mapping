@@ -29,6 +29,16 @@ TARGET_MAPPING = [
 ]
 
 
+try:
+    BENCHMARK_FP
+except NameError:
+    BENCHMARK_FP = output_subdir(Cfg, "benchmarks")
+try:
+    LOG_FP
+except NameError:
+    LOG_FP = output_subdir(Cfg, "logs")
+
+
 ruleorder: build_host_index > build_genome_index
 
 

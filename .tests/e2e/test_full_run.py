@@ -1,14 +1,18 @@
 import csv
 import os
 import pytest
-import shutil
 import subprocess as sp
 import tempfile
 
 
 @pytest.fixture
-def setup():
-    temp_dir = tempfile.mkdtemp()
+def dir(pytestconfig):
+    return pytestconfig.getoption("dir")
+
+
+@pytest.fixture
+def setup(dir):
+    temp_dir = dir if dir else tempfile.mkdtemp()
 
     reads_fp = os.path.abspath(".tests/data/reads/")
     genomes_fp = os.path.abspath(".tests/data/hosts/")
@@ -34,8 +38,6 @@ def setup():
     )
 
     yield temp_dir, project_dir
-
-    shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
