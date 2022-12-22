@@ -1,18 +1,14 @@
 import csv
 import os
 import pytest
+import shutil
 import subprocess as sp
 import tempfile
 
 
 @pytest.fixture
-def dir(pytestconfig):
-    return pytestconfig.getoption("dir")
-
-
-@pytest.fixture
-def setup(dir):
-    temp_dir = dir if dir else tempfile.mkdtemp()
+def setup():
+    temp_dir = tempfile.mkdtemp()
 
     reads_fp = os.path.abspath(".tests/data/reads/")
     genomes_fp = os.path.abspath(".tests/data/hosts/")
@@ -38,6 +34,8 @@ def setup(dir):
     )
 
     yield temp_dir, project_dir
+
+    shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
@@ -66,6 +64,9 @@ def run_sunbeam(setup):
     benchmarks_fp = os.path.join(project_dir, "stats/")
 
     yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
+
+    shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
+    shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
 
 
 @pytest.fixture

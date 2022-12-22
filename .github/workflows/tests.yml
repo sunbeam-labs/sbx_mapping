@@ -27,9 +27,9 @@ jobs:
       - name: Dump Logs
         shell: bash
         if: always()
-        run: tail -n +1 projects/project/sunbeam_output/logs/*
+        run: tail -n +1 logs/*
       
       - name: Dump Stats
         shell: bash
         if: always()
-        run: cat projects/project/stats/*
+        run: cat stats/*
