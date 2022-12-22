@@ -23,7 +23,7 @@ jobs:
           sunbeam-version: 'dev'
           extension-name: 'sunbeam-labs/sbx_mapping'
           extension-branch-name: ${{ github.head_ref }}
-      
+
       - name: Dump Logs
         shell: bash
         if: always()
