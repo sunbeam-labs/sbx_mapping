@@ -42,20 +42,25 @@ def setup():
 def run_sunbeam(setup):
     temp_dir, project_dir = setup
 
-    # Run the test job
-    sp.check_output(
-        [
-            "sunbeam",
-            "run",
-            "--profile",
-            project_dir,
-            "all_mapping",
-            "--directory",
-            temp_dir,
-        ]
-    )
+    output_fp = os.path.join(project_dir, "sunbeam_output")
 
-    output_fp = os.path.join(project_dir, "sunbeam_output/")
+    try:
+        # Run the test job
+        sp.check_output(
+            [
+                "sunbeam",
+                "run",
+                "--profile",
+                project_dir,
+                "all_mapping",
+                "--directory",
+                temp_dir,
+            ]
+        )
+    except sp.CalledProcessError as e:
+        shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
+        shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
+        sp.CalledProcessError(e)
 
     human_genome_fp = os.path.join(output_fp, "mapping/human/")
     human_copy_genome_fp = os.path.join(output_fp, "mapping/human_copy/")
@@ -64,9 +69,6 @@ def run_sunbeam(setup):
     benchmarks_fp = os.path.join(project_dir, "stats/")
 
     yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
-
-    shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
-    shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
 
 
 @pytest.fixture
