@@ -65,6 +65,9 @@ def run_sunbeam(setup):
 
     yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
 
+    shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
+    shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
+
 
 @pytest.fixture
 def expected_file_list():
@@ -97,20 +100,3 @@ def test_full_run(run_sunbeam, expected_file_list):
     assert sorted(os.listdir(human_genome_fp)) == output_files
     assert sorted(os.listdir(human_copy_genome_fp)) == output_files
     assert sorted(os.listdir(phix174_genome_fp)) == output_files
-
-
-def test_benchmarks(run_sunbeam):
-    (
-        human_genome_fp,
-        human_copy_genome_fp,
-        phix174_genome_fp,
-        benchmarks_fp,
-    ) = run_sunbeam
-
-    filename = os.listdir(benchmarks_fp)[0]
-    with open(os.path.join(benchmarks_fp, filename)) as f:
-        rd = csv.DictReader(f, delimiter="\t")
-        for r in rd:
-            assert (
-                float(r["cpu_time"]) < 0.5
-            ), f"cpu_time for {r['rule']} is higher than 0.5: {r['cpu_time']}"
