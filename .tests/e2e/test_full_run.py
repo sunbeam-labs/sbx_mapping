@@ -62,6 +62,9 @@ def run_sunbeam(setup):
         shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
         sp.CalledProcessError(e)
 
+    shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
+    shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
+
     human_genome_fp = os.path.join(output_fp, "mapping/human/")
     human_copy_genome_fp = os.path.join(output_fp, "mapping/human_copy/")
     phix174_genome_fp = os.path.join(output_fp, "mapping/phix174/")
