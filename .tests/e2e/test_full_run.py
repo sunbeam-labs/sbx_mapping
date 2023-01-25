@@ -1,8 +1,8 @@
-import csv
 import os
 import pytest
 import shutil
 import subprocess as sp
+import sys
 import tempfile
 
 
@@ -62,7 +62,7 @@ def run_sunbeam(setup):
     except sp.CalledProcessError as e:
         shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
         shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
-        sp.CalledProcessError(e)
+        sys.exit(e)
 
     shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
     shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
