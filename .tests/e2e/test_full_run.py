@@ -50,6 +50,8 @@ def run_sunbeam(setup):
             [
                 "sunbeam",
                 "run",
+                "--conda-frontend",
+                "conda",
                 "--profile",
                 project_dir,
                 "all_mapping",
