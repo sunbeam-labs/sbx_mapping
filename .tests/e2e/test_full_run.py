@@ -83,7 +83,6 @@ def run_sunbeam(setup):
     bfragilis_cov_fp = os.path.join(output_fp, "mapping/Bfragilis/coverage.csv")
     ecoli_cov_fp = os.path.join(output_fp, "mapping/Ecoli/coverage.csv")
 
-
     benchmarks_fp = os.path.join(project_dir, "stats/")
 
     yield bfragilis_cov_fp, ecoli_cov_fp, benchmarks_fp

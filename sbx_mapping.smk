@@ -3,7 +3,10 @@
 import sys
 
 sys.stderr.write("Collecting target genomes... ")
-if Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"] or not Cfg["sbx_mapping"]["genomes_fp"]:
+if (
+    Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
+    or not Cfg["sbx_mapping"]["genomes_fp"]
+):
     GenomeFiles = []
     GenomeSegments = {}
 else:
@@ -57,9 +60,9 @@ rule build_genome_index:
         Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta",
     output:
         [
-        Cfg["sbx_mapping"]["genomes_fp"] / ("{genome}.fasta." + ext)
-        for ext in ["amb", "ann", "bwt", "pac", "sa"]
-        ]
+            Cfg["sbx_mapping"]["genomes_fp"] / ("{genome}.fasta." + ext)
+            for ext in ["amb", "ann", "bwt", "pac", "sa"]
+        ],
     benchmark:
         BENCHMARK_FP / "build_genome_index_{genome}.tsv"
     log:
