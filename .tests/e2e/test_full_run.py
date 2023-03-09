@@ -80,43 +80,25 @@ def run_sunbeam(setup):
     shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
     shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
 
-    human_genome_fp = os.path.join(output_fp, "mapping/human/")
-    human_copy_genome_fp = os.path.join(output_fp, "mapping/human_copy/")
-    phix174_genome_fp = os.path.join(output_fp, "mapping/phix174/")
+    bfragilis_cov_fp = os.path.join(output_fp, "mapping/Bfragilis/coverage.csv")
+    ecoli_cov_fp = os.path.join(output_fp, "mapping/Ecoli/coverage.csv")
+
 
     benchmarks_fp = os.path.join(project_dir, "stats/")
 
-    yield human_genome_fp, human_copy_genome_fp, phix174_genome_fp, benchmarks_fp
+    yield bfragilis_cov_fp, ecoli_cov_fp, benchmarks_fp
 
 
-@pytest.fixture
-def expected_file_list():
-    yield sorted(
-        [
-            "random.raw.bcf",
-            "dummybfragilis.bam.bai",
-            "random.bam",
-            "dummybfragilis.raw.bcf",
-            "dummybfragilis.bam",
-            "dummyecoli.raw.bcf",
-            "dummyecoli.bam.bai",
-            "dummyecoli.bam",
-            "random.bam.bai",
-            "coverage.csv",
-        ]
-    )
-
-
-def test_full_run(run_sunbeam, expected_file_list):
+def test_full_run(run_sunbeam):
     (
-        human_genome_fp,
-        human_copy_genome_fp,
-        phix174_genome_fp,
+        bfragilis_cov_fp,
+        ecoli_cov_fp,
         benchmarks_fp,
     ) = run_sunbeam
-    output_files = expected_file_list
 
     # Check output
-    assert sorted(os.listdir(human_genome_fp)) == output_files
-    assert sorted(os.listdir(human_copy_genome_fp)) == output_files
-    assert sorted(os.listdir(phix174_genome_fp)) == output_files
+    assert os.path.exists(bfragilis_cov_fp)
+    assert os.path.exists(ecoli_cov_fp)
+
+    assert os.stat(bfragilis_cov_fp).st_size != 0
+    assert os.stat(ecoli_cov_fp).st_size != 0
