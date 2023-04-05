@@ -2,7 +2,7 @@
 
 import sys
 
-sys.stderr.write("Collecting target genomes... ")
+sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
 if (
     Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
     or not Cfg["sbx_mapping"]["genomes_fp"]
@@ -16,7 +16,7 @@ else:
         for g in GenomeFiles
     }
 sys.stderr.write("done.\n")
-sys.stderr.write(f"Genome files found: {str(GenomeFiles)}\n")
+sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
 TARGET_MAPPING = [
     expand(
