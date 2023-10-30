@@ -33,6 +33,32 @@ TARGET_MAPPING = [
 ]
 
 
+TARGET_MAPPING_FILTER = [
+    expand(
+        str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai"),
+        genome=GenomeSegments.keys(),
+        sample=Samples.keys(),
+    ),
+    expand(
+        str(MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv"),
+        genome=GenomeSegments.keys(),
+    ),
+    expand(
+        str(MAPPING_FP / "filtered" / "{genome}" / "numReads.csv"),
+        genome=GenomeSegments.keys(),
+    ),
+    expand(str(MAPPING_FP / "{genome}" / "numReads.csv"), genome=GenomeSegments.keys()),
+    expand(
+        str(MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv"),
+        genome=GenomeSegments.keys(),
+    ),
+    expand(
+        str(MAPPING_FP / "{genome}" / "sliding_coverage.csv"),
+        genome=GenomeSegments.keys(),
+    ),
+]
+
+
 try:
     BENCHMARK_FP
 except NameError:
