@@ -4,7 +4,6 @@ import subprocess
 
 
 def sliding_window_coverage(genome, bamfile, sample, output_fp, N, sampling):
-    output_rows = []
     args = ["samtools", "depth", "-aa", bamfile]
     p = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
     # Organize into a list of depths for each segment, streaming in text
