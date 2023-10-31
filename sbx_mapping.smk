@@ -160,7 +160,7 @@ rule samtools_summarize_coverage:
 
 rule samtools_get_coverage:
     input:
-        MAPPING_FP / "{genome}" / "{sample}.bam",
+        bam=MAPPING_FP / "{genome}" / "{sample}.bam",
     output:
         MAPPING_FP / "intermediates" / "{genome}" / "{sample}.csv",
     benchmark:

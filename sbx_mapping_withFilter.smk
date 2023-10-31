@@ -24,7 +24,7 @@ TARGET_MAPPING_FILTER = [
 ]
 
 
-rule samtools_get_sliding_coverage:
+rule get_sliding_coverage:
     input:
         str(MAPPING_FP / "{genome}" / "{sample}.bam"),
     output:
@@ -35,7 +35,7 @@ rule samtools_get_sliding_coverage:
     conda:
         "sbx_mapping_env.yml"
     script:
-        "scripts/samtools_get_sliding_coverage.py"
+        "scripts/get_sliding_coverage.py"
 
 
 def _sliding_coverage_csvs(w):
@@ -46,7 +46,7 @@ def _sliding_coverage_csvs(w):
     return paths
 
 
-rule samtools_summarize_sliding_coverage:
+rule summarize_sliding_coverage:
     input:
         _sliding_coverage_csvs,
     output:
@@ -72,9 +72,6 @@ rule filter_aln_quality:
         "sbx_mapping_env.yml"
     script:
         "scripts/filter_aln_quality.py"
-    run:
-        print(input)
-        filter_bam_alignments(input[0], output[0], params.percIdentity, params.alnLen)
 
 
 # rule samtools_index_filtered:
@@ -83,16 +80,20 @@ rule filter_aln_quality:
 #    shell: "samtools index {input} {output}"
 
 
-rule samtools_get_coverage_filtered:
+rule get_coverage_filtered:
     input:
-        in_bam=str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam"),
-        in_bai=str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai"),
+        bam=str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam"),
+        bai=str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai"),
     output:
         str(MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}.csv"),
-    run:
-        samtools.get_coverage_stats(
-            wildcards.genome, input.in_bam, wildcards.sample, output[0]
-        )
+    benchmark:
+        BENCHMARK_FP / "get_coverage_filtered_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "get_coverage_filtered_{genome}_{sample}.log",
+    conda:
+        "sbx_mapping_env.yml"
+    script:
+        "scripts/samtools_get_coverage.py"
 
 
 def _sorted_filtered_csvs(w):
@@ -110,7 +111,7 @@ rule samtools_summarize_filtered_coverage:
         "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
 
 
-rule samtools_summarize_num_mapped_reads:
+rule summarize_num_mapped_reads:
     input:
         str(MAPPING_FP / "{genome}" / "{sample}.bam"),
     output:
@@ -127,7 +128,7 @@ def _numReads(w):
     return paths
 
 
-rule samtools_summarize_numReads:
+rule summarize_num_reads:
     input:
         _numReads,
     output:
