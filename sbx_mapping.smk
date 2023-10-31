@@ -2,21 +2,25 @@
 
 import sys
 
-sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
-if (
-    Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
-    or not Cfg["sbx_mapping"]["genomes_fp"]
-):
-    GenomeFiles = []
-    GenomeSegments = {}
-else:
-    GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
-    GenomeSegments = {
-        PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
-        for g in GenomeFiles
-    }
-sys.stderr.write("done.\n")
-sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
+try:
+    GenomeFiles
+    GenomeSegments
+except NameError:
+    sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
+    if (
+        Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
+        or not Cfg["sbx_mapping"]["genomes_fp"]
+    ):
+        GenomeFiles = []
+        GenomeSegments = {}
+    else:
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+        GenomeSegments = {
+            PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
+            for g in GenomeFiles
+        }
+    sys.stderr.write("done.\n")
+    sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
 TARGET_MAPPING = [
     expand(
@@ -30,32 +34,6 @@ TARGET_MAPPING = [
         sample=Samples.keys(),
     ),
     expand(MAPPING_FP / "{genome}" / "coverage.csv", genome=GenomeSegments.keys()),
-]
-
-
-TARGET_MAPPING_FILTER = [
-    expand(
-        str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai"),
-        genome=GenomeSegments.keys(),
-        sample=Samples.keys(),
-    ),
-    expand(
-        str(MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv"),
-        genome=GenomeSegments.keys(),
-    ),
-    expand(
-        str(MAPPING_FP / "filtered" / "{genome}" / "numReads.csv"),
-        genome=GenomeSegments.keys(),
-    ),
-    expand(str(MAPPING_FP / "{genome}" / "numReads.csv"), genome=GenomeSegments.keys()),
-    expand(
-        str(MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv"),
-        genome=GenomeSegments.keys(),
-    ),
-    expand(
-        str(MAPPING_FP / "{genome}" / "sliding_coverage.csv"),
-        genome=GenomeSegments.keys(),
-    ),
 ]
 
 

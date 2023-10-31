@@ -1,3 +1,25 @@
+import sys
+
+try:
+    GenomeFiles
+    GenomeSegments
+except NameError:
+    sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
+    if (
+        Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
+        or not Cfg["sbx_mapping"]["genomes_fp"]
+    ):
+        GenomeFiles = []
+        GenomeSegments = {}
+    else:
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+        GenomeSegments = {
+            PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
+            for g in GenomeFiles
+        }
+    sys.stderr.write("done.\n")
+    sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
+
 TARGET_MAPPING_FILTER = [
     expand(
         str(MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai"),
