@@ -20,8 +20,8 @@ jobs:
       - name: Test with Sunbeam
         uses: sunbeam-labs/sbx_test_action@v0
         with:
-          sunbeam-version: 'dev'
-          install-options: '-m'
+          sunbeam-version: 'main'
+          install-options: ''
           extension-name: 'sunbeam-labs/sbx_mapping'
           extension-branch-name: ${{ github.head_ref }}
 
