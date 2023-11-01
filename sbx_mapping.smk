@@ -46,11 +46,11 @@ TARGET_MAPPING = [
         genome=GenomeSegments.keys(),
     ),
     expand(
-        MAPPING_FP / "filtered" / "{genome}" / "numReads.csv",
+        MAPPING_FP / "{genome}" / "numReads.csv",
         genome=GenomeSegments.keys(),
     ),
     expand(
-        MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
+        MAPPING_FP / "{genome}" / "sliding_coverage.csv",
         genome=GenomeSegments.keys(),
     ),
 ]
