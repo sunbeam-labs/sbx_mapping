@@ -234,6 +234,7 @@ rule summarize_num_reads:
         "(cat {input}) > {output}"
 
 
+# TODO: Remove if not needed
 
 
 rule samtools_mpileup:
