@@ -254,27 +254,3 @@ rule summarize_num_reads:
         MAPPING_FP / "{genome}" / "numReads.csv",
     shell:
         "(cat {input}) > {output}"
-
-
-# TODO: Remove if not needed
-
-
-rule samtools_mpileup:
-    input:
-        bam=MAPPING_FP / "{genome}" / "{sample}.bam",
-        genome=Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta",
-    output:
-        mpileup_out=temp(MAPPING_FP / "{genome}" / "{sample}.bcf"),
-        call_out=MAPPING_FP / "{genome}" / "{sample}.raw.bcf",
-    benchmark:
-        BENCHMARK_FP / "samtools_mpileup_{genome}_{sample}.tsv"
-    log:
-        mpileup_log=LOG_FP / "samtools_mpileup_mpileup_{genome}_{sample}.log",
-        call_log=LOG_FP / "samtools_mpileup_call_{genome}_{sample}.log",
-    conda:
-        "sbx_mapping_env.yml"
-    shell:
-        """
-        bcftools mpileup -f {input.genome} {input.bam} -o {output.mpileup_out} 2>&1 | tee {log.mpileup_log} && \
-        bcftools call -Ob -v -c -o {output.call_out} {output.mpileup_out} 2>&1 | tee {log.call_log}
-        """
