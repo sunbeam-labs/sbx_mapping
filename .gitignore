@@ -1,2 +1,3 @@
 .tests/data/hosts/*.fasta.*
-/__pycache__/
+.tests/data/ref/*.fasta.*
+__pycache__
