@@ -174,7 +174,15 @@ rule get_sliding_coverage:
 
 rule summarize_sliding_coverage:
     input:
-        sorted(expand(MAPPING_FP / "intermediates" / "{{genome}}" / "{sample}_sliding_coverage.csv", sample=Samples.keys())),
+        sorted(
+            expand(
+                MAPPING_FP
+                / "intermediates"
+                / "{{genome}}"
+                / "{sample}_sliding_coverage.csv",
+                sample=Samples.keys(),
+            )
+        ),
     output:
         MAPPING_FP / "{genome}" / "sliding_coverage.csv",
     shell:
@@ -183,7 +191,7 @@ rule summarize_sliding_coverage:
 
 ### Get filtered coverage stats ###
 
-        
+
 rule get_coverage_filtered:
     input:
         bam=MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
@@ -202,7 +210,16 @@ rule get_coverage_filtered:
 
 rule samtools_summarize_filtered_coverage:
     input:
-        sorted(expand(MAPPING_FP / "filtered" / "intermediates" / "{{genome}}" / "{sample}.csv", sample=Samples.keys())),
+        sorted(
+            expand(
+                MAPPING_FP
+                / "filtered"
+                / "intermediates"
+                / "{{genome}}"
+                / "{sample}.csv",
+                sample=Samples.keys(),
+            )
+        ),
     output:
         MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
     shell:
@@ -227,7 +244,12 @@ rule summarize_num_mapped_reads:
 
 rule summarize_num_reads:
     input:
-        sorted(expand(MAPPING_FP / "intermediates" / "{{genome}}" / "{sample}_numReads.csv", sample=Samples.keys())),
+        sorted(
+            expand(
+                MAPPING_FP / "intermediates" / "{{genome}}" / "{sample}_numReads.csv",
+                sample=Samples.keys(),
+            )
+        ),
     output:
         MAPPING_FP / "{genome}" / "numReads.csv",
     shell:
