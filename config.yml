@@ -1,3 +1,7 @@
 sbx_mapping:
   genomes_fp: ''
   samtools_opts: ''
+  alnLen: 30
+  percIdentity: 0.97
+  window_size: 5000
+  sampling: 5000

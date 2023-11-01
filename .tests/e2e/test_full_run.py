@@ -80,24 +80,42 @@ def run_sunbeam(setup):
     shutil.copytree(os.path.join(output_fp, "logs/"), "logs/")
     shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
 
-    bfragilis_cov_fp = os.path.join(output_fp, "mapping/Bfragilis/coverage.csv")
-    ecoli_cov_fp = os.path.join(output_fp, "mapping/Ecoli/coverage.csv")
+    bfragilis_sliding_cov_fp = os.path.join(
+        output_fp, "mapping/Bfragilis/sliding_coverage.csv"
+    )
+    ecoli_sliding_cov_fp = os.path.join(output_fp, "mapping/Ecoli/sliding_coverage.csv")
+    bfragilis_filtered_cov_fp = os.path.join(
+        output_fp, "mapping/filtered/Bfragilis/coverage_filtered.csv"
+    )
+    ecoli_filtered_cov_fp = os.path.join(
+        output_fp, "mapping/filtered/Ecoli/coverage_filtered.csv"
+    )
+    bfragilis_num_reads_fp = os.path.join(output_fp, "mapping/Bfragilis/numReads.csv")
+    ecoli_num_reads_fp = os.path.join(output_fp, "mapping/Ecoli/numReads.csv")
 
     benchmarks_fp = os.path.join(project_dir, "stats/")
 
-    yield bfragilis_cov_fp, ecoli_cov_fp, benchmarks_fp
+    yield bfragilis_sliding_cov_fp, ecoli_sliding_cov_fp, bfragilis_filtered_cov_fp, ecoli_filtered_cov_fp, bfragilis_num_reads_fp, ecoli_num_reads_fp, benchmarks_fp
 
 
 def test_full_run(run_sunbeam):
     (
-        bfragilis_cov_fp,
-        ecoli_cov_fp,
+        bfragilis_sliding_cov_fp,
+        ecoli_sliding_cov_fp,
+        bfragilis_filtered_cov_fp,
+        ecoli_filtered_cov_fp,
+        bfragilis_num_reads_fp,
+        ecoli_num_reads_fp,
         benchmarks_fp,
     ) = run_sunbeam
 
     # Check output
-    assert os.path.exists(bfragilis_cov_fp)
-    assert os.path.exists(ecoli_cov_fp)
+    assert os.path.exists(bfragilis_sliding_cov_fp)
+    assert os.path.exists(ecoli_sliding_cov_fp)
+    assert os.path.exists(bfragilis_filtered_cov_fp)
+    assert os.path.exists(ecoli_filtered_cov_fp)
+    assert os.path.exists(bfragilis_num_reads_fp)
+    assert os.path.exists(ecoli_num_reads_fp)
 
-    assert os.stat(bfragilis_cov_fp).st_size != 0
-    assert os.stat(ecoli_cov_fp).st_size != 0
+    assert os.stat(bfragilis_sliding_cov_fp).st_size != 0
+    assert os.stat(ecoli_sliding_cov_fp).st_size != 0

@@ -71,7 +71,7 @@ def get_coverage_stats(genome_name, bamfile, sample, output_fp):
 with open(snakemake.log[0], "w") as log:
     get_coverage_stats(
         snakemake.wildcards.genome,
-        snakemake.input[0],
+        snakemake.input.bam,
         snakemake.wildcards.sample,
         snakemake.output[0],
     )

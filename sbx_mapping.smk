@@ -2,35 +2,25 @@
 
 import sys
 
-sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
-if (
-    Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
-    or not Cfg["sbx_mapping"]["genomes_fp"]
-):
-    GenomeFiles = []
-    GenomeSegments = {}
-else:
-    GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
-    GenomeSegments = {
-        PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
-        for g in GenomeFiles
-    }
-sys.stderr.write("done.\n")
-sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
-
-TARGET_MAPPING = [
-    expand(
-        MAPPING_FP / "{genome}" / "{sample}.bam.bai",
-        genome=GenomeSegments.keys(),
-        sample=Samples.keys(),
-    ),
-    expand(
-        MAPPING_FP / "{genome}" / "{sample}.raw.bcf",
-        genome=GenomeSegments.keys(),
-        sample=Samples.keys(),
-    ),
-    expand(MAPPING_FP / "{genome}" / "coverage.csv", genome=GenomeSegments.keys()),
-]
+try:
+    GenomeFiles
+    GenomeSegments
+except NameError:
+    sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
+    if (
+        Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
+        or not Cfg["sbx_mapping"]["genomes_fp"]
+    ):
+        GenomeFiles = []
+        GenomeSegments = {}
+    else:
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+        GenomeSegments = {
+            PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
+            for g in GenomeFiles
+        }
+    sys.stderr.write("done.\n")
+    sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
 
 try:
@@ -50,9 +40,28 @@ localrules:
     all_mapping,
 
 
+TARGET_MAPPING = [
+    expand(
+        MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
+        genome=GenomeSegments.keys(),
+    ),
+    expand(
+        MAPPING_FP / "{genome}" / "numReads.csv",
+        genome=GenomeSegments.keys(),
+    ),
+    expand(
+        MAPPING_FP / "{genome}" / "sliding_coverage.csv",
+        genome=GenomeSegments.keys(),
+    ),
+]
+
+
 rule all_mapping:
     input:
         TARGET_MAPPING,
+
+
+### Prepping BAM files ###
 
 
 rule build_genome_index:
@@ -117,41 +126,25 @@ rule samtools_convert:
         """
 
 
-def _sorted_csvs(w):
-    pattern = MAPPING_FP / "intermediates" / w.genome / "{sample}.csv"
-    paths = sorted(expand(pattern, sample=Samples.keys()))
-    return paths
-
-
-rule samtools_summarize_coverage:
-    input:
-        _sorted_csvs,
-    output:
-        MAPPING_FP / "{genome}" / "coverage.csv",
-    shell:
-        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
-
-
-rule samtools_get_coverage:
+rule filter_aln_quality:
     input:
         MAPPING_FP / "{genome}" / "{sample}.bam",
     output:
-        MAPPING_FP / "intermediates" / "{genome}" / "{sample}.csv",
-    benchmark:
-        BENCHMARK_FP / "samtools_get_coverage_{genome}_{sample}.tsv"
-    log:
-        LOG_FP / "samtools_get_coverage_{genome}_{sample}.log",
+        MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
+    params:
+        alnLen=Cfg["sbx_mapping"]["alnLen"],
+        percIdentity=Cfg["sbx_mapping"]["percIdentity"],
     conda:
         "sbx_mapping_env.yml"
     script:
-        "scripts/samtools_get_coverage.py"
+        "scripts/filter_aln_quality.py"
 
 
 rule samtools_index:
     input:
-        MAPPING_FP / "{genome}" / "{sample}.bam",
+        MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
-        MAPPING_FP / "{genome}" / "{sample}.bam.bai",
+        MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai",
     benchmark:
         BENCHMARK_FP / "samtools_getindex_{genome}_{sample}.tsv"
     log:
@@ -160,6 +153,110 @@ rule samtools_index:
         "sbx_mapping_env.yml"
     shell:
         "samtools index {input} {output} 2>&1 | tee {log}"
+
+
+### Calculate sliding window coverage stats ###
+
+
+rule get_sliding_coverage:
+    input:
+        MAPPING_FP / "{genome}" / "{sample}.bam",
+    output:
+        MAPPING_FP / "intermediates" / "{genome}" / "{sample}_sliding_coverage.csv",
+    params:
+        window_size=Cfg["sbx_mapping"]["window_size"],
+        sampling=Cfg["sbx_mapping"]["sampling"],
+    conda:
+        "sbx_mapping_env.yml"
+    script:
+        "scripts/get_sliding_coverage.py"
+
+
+rule summarize_sliding_coverage:
+    input:
+        sorted(
+            expand(
+                MAPPING_FP
+                / "intermediates"
+                / "{{genome}}"
+                / "{sample}_sliding_coverage.csv",
+                sample=Samples.keys(),
+            )
+        ),
+    output:
+        MAPPING_FP / "{genome}" / "sliding_coverage.csv",
+    shell:
+        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
+
+
+### Get filtered coverage stats ###
+
+
+rule get_coverage_filtered:
+    input:
+        bam=MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
+        bai=MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai",
+    output:
+        MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}.csv",
+    benchmark:
+        BENCHMARK_FP / "get_coverage_filtered_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "get_coverage_filtered_{genome}_{sample}.log",
+    conda:
+        "sbx_mapping_env.yml"
+    script:
+        "scripts/samtools_get_coverage.py"
+
+
+rule samtools_summarize_filtered_coverage:
+    input:
+        sorted(
+            expand(
+                MAPPING_FP
+                / "filtered"
+                / "intermediates"
+                / "{{genome}}"
+                / "{sample}.csv",
+                sample=Samples.keys(),
+            )
+        ),
+    output:
+        MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
+    shell:
+        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
+
+
+### Get number of mapped reads ###
+
+
+rule summarize_num_mapped_reads:
+    input:
+        MAPPING_FP / "{genome}" / "{sample}.bam",
+    output:
+        MAPPING_FP / "intermediates" / "{genome}" / "{sample}_numReads.csv",
+    conda:
+        "sbx_mapping_env.yml"
+    shell:
+        """
+        samtools idxstats {input} | (sed 's/^/{wildcards.sample}\t/') > {output}
+        """
+
+
+rule summarize_num_reads:
+    input:
+        sorted(
+            expand(
+                MAPPING_FP / "intermediates" / "{{genome}}" / "{sample}_numReads.csv",
+                sample=Samples.keys(),
+            )
+        ),
+    output:
+        MAPPING_FP / "{genome}" / "numReads.csv",
+    shell:
+        "(cat {input}) > {output}"
+
+
+# TODO: Remove if not needed
 
 
 rule samtools_mpileup:

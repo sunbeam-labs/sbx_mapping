@@ -18,7 +18,7 @@ To install, activate your conda environment (using the name of your environment)
 
 ## Usage
 
-To generate a csv coverage file along with bam and bcf files, create a project, specify your references, and use the `all_mapping` target:
+To generate coverage reports, create a project, specify your references, and use the `all_mapping` target:
 
     sunbeam init --data_fp /path/to/reads/ /path/to/project/
     sunbeam config modify -i -f /path/to/project/sunbeam_config.yml -s 'sbx_mapping: {{genomes_fp: {/path/to/hosts/}}}'
@@ -30,6 +30,10 @@ N.B. For sunbeam versions <4 the last command will be something like `sunbeam ru
 
   - genomes_fp: Is the filepath to your reference genomes (in fasta format)
   - samtools_opts: Are the options passed to samtools view
+  - alnLen: Is the minimum alignment length
+  - percIdentity: Is the minimum percent identity
+  - window_size: Is the size of the sliding window for coverage calculations
+  - sampling: Is the sampling rate for coverage calculations
 
 ## Legacy Installation
 
