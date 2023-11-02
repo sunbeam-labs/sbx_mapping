@@ -160,7 +160,7 @@ rule samtools_index:
 
 rule get_sliding_coverage:
     input:
-        MAPPING_FP / "{genome}" / "{sample}.bam",
+        MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
         MAPPING_FP / "intermediates" / "{genome}" / "{sample}_sliding_coverage.csv",
     params:
@@ -231,7 +231,7 @@ rule samtools_summarize_filtered_coverage:
 
 rule summarize_num_mapped_reads:
     input:
-        MAPPING_FP / "{genome}" / "{sample}.bam",
+        MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
         MAPPING_FP / "intermediates" / "{genome}" / "{sample}_numReads.csv",
     conda:
