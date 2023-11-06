@@ -46,11 +46,11 @@ TARGET_MAPPING = [
         genome=GenomeSegments.keys(),
     ),
     expand(
-        MAPPING_FP / "{genome}" / "numReads.csv",
+        MAPPING_FP / "filtered" / "{genome}" / "numReads.tsv",
         genome=GenomeSegments.keys(),
     ),
     expand(
-        MAPPING_FP / "{genome}" / "sliding_coverage.csv",
+        MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
         genome=GenomeSegments.keys(),
     ),
 ]
@@ -162,7 +162,7 @@ rule get_sliding_coverage:
     input:
         MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
-        MAPPING_FP / "intermediates" / "{genome}" / "{sample}_sliding_coverage.csv",
+        MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_sliding_coverage.csv",
     params:
         window_size=Cfg["sbx_mapping"]["window_size"],
         sampling=Cfg["sbx_mapping"]["sampling"],
@@ -177,6 +177,7 @@ rule summarize_sliding_coverage:
         sorted(
             expand(
                 MAPPING_FP
+                / "filtered" 
                 / "intermediates"
                 / "{{genome}}"
                 / "{sample}_sliding_coverage.csv",
@@ -184,7 +185,7 @@ rule summarize_sliding_coverage:
             )
         ),
     output:
-        MAPPING_FP / "{genome}" / "sliding_coverage.csv",
+        MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
     shell:
         "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
 
@@ -233,7 +234,7 @@ rule summarize_num_mapped_reads:
     input:
         MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
-        MAPPING_FP / "intermediates" / "{genome}" / "{sample}_numReads.csv",
+        MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_numReads.tsv",
     conda:
         "sbx_mapping_env.yml"
     shell:
@@ -246,11 +247,15 @@ rule summarize_num_reads:
     input:
         sorted(
             expand(
-                MAPPING_FP / "intermediates" / "{{genome}}" / "{sample}_numReads.csv",
+                MAPPING_FP 
+                / "filtered" 
+                / "intermediates" 
+                / "{{genome}}" 
+                / "{sample}_numReads.tsv",
                 sample=Samples.keys(),
             )
         ),
     output:
-        MAPPING_FP / "{genome}" / "numReads.csv",
+        MAPPING_FP / "filtered" / "{genome}" / "numReads.tsv",
     shell:
         "(cat {input}) > {output}"
