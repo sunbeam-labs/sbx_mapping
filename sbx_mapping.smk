@@ -198,7 +198,7 @@ rule get_coverage_filtered:
         bam=MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
         bai=MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam.bai",
     output:
-        MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}.csv",
+        MAPPING_FP / "filtered" / "coverage" / "{genome}" / "{sample}.csv",
     benchmark:
         BENCHMARK_FP / "get_coverage_filtered_{genome}_{sample}.tsv"
     log:
@@ -215,7 +215,7 @@ rule samtools_summarize_filtered_coverage:
             expand(
                 MAPPING_FP
                 / "filtered"
-                / "intermediates"
+                / "coverage"
                 / "{{genome}}"
                 / "{sample}.csv",
                 sample=Samples.keys(),
