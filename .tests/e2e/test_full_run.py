@@ -21,15 +21,7 @@ def setup():
 
     config_str = f"sbx_mapping: {{genomes_fp: {genomes_fp}}}"
     sp.check_output(
-        [
-            "sunbeam",
-            "config",
-            "modify",
-            "-i",
-            "-s",
-            f"{config_str}",
-            f"{config_fp}",
-        ]
+        ["sunbeam", "config", "modify", "-i", "-s", f"{config_str}", f"{config_fp}",]
     )
 
     yield temp_dir, project_dir
@@ -69,14 +61,18 @@ def run_sunbeam(setup):
     bfragilis_sliding_cov_fp = os.path.join(
         output_fp, "mapping/filtered/Bfragilis/sliding_coverage.csv"
     )
-    ecoli_sliding_cov_fp = os.path.join(output_fp, "mapping/filtered/Ecoli/sliding_coverage.csv")
+    ecoli_sliding_cov_fp = os.path.join(
+        output_fp, "mapping/filtered/Ecoli/sliding_coverage.csv"
+    )
     bfragilis_filtered_cov_fp = os.path.join(
         output_fp, "mapping/filtered/Bfragilis/coverage_filtered.csv"
     )
     ecoli_filtered_cov_fp = os.path.join(
         output_fp, "mapping/filtered/Ecoli/coverage_filtered.csv"
     )
-    bfragilis_num_reads_fp = os.path.join(output_fp, "mapping/filtered/Bfragilis/numReads.tsv")
+    bfragilis_num_reads_fp = os.path.join(
+        output_fp, "mapping/filtered/Bfragilis/numReads.tsv"
+    )
     ecoli_num_reads_fp = os.path.join(output_fp, "mapping/filtered/Ecoli/numReads.tsv")
 
     benchmarks_fp = os.path.join(project_dir, "stats/")
