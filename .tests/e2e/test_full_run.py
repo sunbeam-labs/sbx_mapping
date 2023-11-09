@@ -81,17 +81,17 @@ def run_sunbeam(setup):
     shutil.copytree(os.path.join(project_dir, "stats/"), "stats/")
 
     bfragilis_sliding_cov_fp = os.path.join(
-        output_fp, "mapping/Bfragilis/sliding_coverage.csv"
+        output_fp, "mapping/filtered/Bfragilis/sliding_coverage.csv"
     )
-    ecoli_sliding_cov_fp = os.path.join(output_fp, "mapping/Ecoli/sliding_coverage.csv")
+    ecoli_sliding_cov_fp = os.path.join(output_fp, "mapping/filtered/Ecoli/sliding_coverage.csv")
     bfragilis_filtered_cov_fp = os.path.join(
         output_fp, "mapping/filtered/Bfragilis/coverage_filtered.csv"
     )
     ecoli_filtered_cov_fp = os.path.join(
         output_fp, "mapping/filtered/Ecoli/coverage_filtered.csv"
     )
-    bfragilis_num_reads_fp = os.path.join(output_fp, "mapping/Bfragilis/numReads.csv")
-    ecoli_num_reads_fp = os.path.join(output_fp, "mapping/Ecoli/numReads.csv")
+    bfragilis_num_reads_fp = os.path.join(output_fp, "mapping/filtered/Bfragilis/numReads.tsv")
+    ecoli_num_reads_fp = os.path.join(output_fp, "mapping/filtered/Ecoli/numReads.tsv")
 
     benchmarks_fp = os.path.join(project_dir, "stats/")
 

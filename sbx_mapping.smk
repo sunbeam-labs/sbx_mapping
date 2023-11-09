@@ -177,7 +177,7 @@ rule summarize_sliding_coverage:
         sorted(
             expand(
                 MAPPING_FP
-                / "filtered" 
+                / "filtered"
                 / "intermediates"
                 / "{{genome}}"
                 / "{sample}_sliding_coverage.csv",
@@ -213,11 +213,7 @@ rule samtools_summarize_filtered_coverage:
     input:
         sorted(
             expand(
-                MAPPING_FP
-                / "filtered"
-                / "coverage"
-                / "{{genome}}"
-                / "{sample}.csv",
+                MAPPING_FP / "filtered" / "coverage" / "{{genome}}" / "{sample}.csv",
                 sample=Samples.keys(),
             )
         ),
@@ -247,10 +243,10 @@ rule summarize_num_reads:
     input:
         sorted(
             expand(
-                MAPPING_FP 
-                / "filtered" 
-                / "intermediates" 
-                / "{{genome}}" 
+                MAPPING_FP
+                / "filtered"
+                / "intermediates"
+                / "{{genome}}"
                 / "{sample}_numReads.tsv",
                 sample=Samples.keys(),
             )
