@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
         
       - name: Test with Sunbeam
-          uses: sunbeam-labs/sbx_test_action@v1
+        uses: sunbeam-labs/sbx_test_action@v1
 
       - name: Dump Logs
         shell: bash
