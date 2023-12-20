@@ -21,7 +21,7 @@ To install, activate your conda environment (using the name of your environment)
 To generate coverage reports, create a project, specify your references, and use the `all_mapping` target:
 
     sunbeam init --data_fp /path/to/reads/ /path/to/project/
-    sunbeam config modify -i -f /path/to/project/sunbeam_config.yml -s 'sbx_mapping: {{genomes_fp: {/path/to/hosts/}}}'
+    sunbeam config modify -i -f /path/to/project/sunbeam_config.yml -s 'sbx_mapping: {{genomes_fp: {/path/to/uncompressed/fasta/reference/genomes/}}}'
     sunbeam run --profile /path/to/project/ all_mapping
 
 N.B. For sunbeam versions <4 the last command will be something like `sunbeam run --configfile /path/to/project/sunbeam_config.yml all_mapping`.
