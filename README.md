@@ -28,7 +28,7 @@ N.B. For sunbeam versions <4 the last command will be something like `sunbeam ru
 
 ## Configuration
 
-  - genomes_fp: Is the filepath to your reference genomes (in fasta format)
+  - genomes_fp: Is the filepath to your reference genomes (in fasta format) **references must have .fasta extension!!**
   - samtools_opts: Are the options passed to samtools view
   - alnLen: Is the minimum alignment length
   - percIdentity: Is the minimum percent identity
