@@ -77,7 +77,7 @@ rule build_genome_index:
     log:
         LOG_FP / "build_genome_index_{genome}.log",
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     shell:
         "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input} 2>&1 | tee {log}"
 
@@ -96,7 +96,7 @@ rule align_to_genome:
         index_fp=Cfg["sbx_mapping"]["genomes_fp"],
     threads: 4
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     shell:
         """
         bwa mem -M -t {threads} \
@@ -118,7 +118,7 @@ rule samtools_convert:
         sort_log=LOG_FP / "samtools_convert_sort_{genome}_{sample}.log",
     threads: 4
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     shell:
         """
         samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} 2>&1 | tee {log.view_log} | \
@@ -135,7 +135,7 @@ rule filter_aln_quality:
         alnLen=Cfg["sbx_mapping"]["alnLen"],
         percIdentity=Cfg["sbx_mapping"]["percIdentity"],
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     script:
         "scripts/filter_aln_quality.py"
 
@@ -150,7 +150,7 @@ rule samtools_index:
     log:
         LOG_FP / "samtools_index_{genome}_{sample}.log",
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     shell:
         "samtools index {input} {output} 2>&1 | tee {log}"
 
@@ -167,7 +167,7 @@ rule get_sliding_coverage:
         window_size=Cfg["sbx_mapping"]["window_size"],
         sampling=Cfg["sbx_mapping"]["sampling"],
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     script:
         "scripts/get_sliding_coverage.py"
 
@@ -204,7 +204,7 @@ rule get_coverage_filtered:
     log:
         LOG_FP / "get_coverage_filtered_{genome}_{sample}.log",
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     script:
         "scripts/samtools_get_coverage.py"
 
@@ -232,7 +232,7 @@ rule summarize_num_mapped_reads:
     output:
         MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_numReads.tsv",
     conda:
-        "sbx_mapping_env.yml"
+        "envs/sbx_mapping_env.yml"
     shell:
         """
         samtools idxstats {input} | (sed 's/^/{wildcards.sample}\t/') > {output}
