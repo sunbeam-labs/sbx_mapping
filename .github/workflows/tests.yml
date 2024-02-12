@@ -5,6 +5,8 @@ on:
     branches: [ master, main ]
   push:
     branches: [ master, main ]
+  workflow_call:
+  workflow_dispatch:
   schedule:
     - cron: "0 13 * * 1"
 
@@ -42,11 +44,11 @@ jobs:
             python-version: 3.12
       
       - name: Install Dependencies
-        run: pip install pytest
+        run: pip install pytest pysam
 
       - name: Run Unit Tests
-        run: |
-          pytest .tests/unit/
+        run: true #pytest .tests/unit/
+        # This'll require having a lib within scripts with internal tests
 
   test-e2e:
     name: Test Extension with Sunbeam

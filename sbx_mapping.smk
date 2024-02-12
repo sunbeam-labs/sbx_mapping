@@ -162,7 +162,11 @@ rule get_sliding_coverage:
     input:
         MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
-        MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_sliding_coverage.csv",
+        MAPPING_FP
+        / "filtered"
+        / "intermediates"
+        / "{genome}"
+        / "{sample}_sliding_coverage.csv",
     params:
         window_size=Cfg["sbx_mapping"]["window_size"],
         sampling=Cfg["sbx_mapping"]["sampling"],

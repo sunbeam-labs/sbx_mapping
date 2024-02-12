@@ -21,7 +21,15 @@ def setup():
 
     config_str = f"sbx_mapping: {{genomes_fp: {genomes_fp}}}"
     sp.check_output(
-        ["sunbeam", "config", "modify", "-i", "-s", f"{config_str}", f"{config_fp}",]
+        [
+            "sunbeam",
+            "config",
+            "modify",
+            "-i",
+            "-s",
+            f"{config_str}",
+            f"{config_fp}",
+        ]
     )
 
     yield temp_dir, project_dir
