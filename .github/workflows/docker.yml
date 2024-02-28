@@ -13,12 +13,6 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-
-            - name: Debug
-              run: |
-                if [[ "" == ${{ secrets.DOCKERHUB_USERNAME }} ]]; then
-                  echo "HEY"
-                fi
             
             - name: Log in to Docker Hub
               uses: docker/login-action@v3
@@ -30,7 +24,7 @@ jobs:
               id: meta
               uses: docker/metadata-action@v5
               with:
-                images: sunbeam-labs/sbx_mapping
+                images: sunbeamlabs/sbx_mapping
             
             - name: Build and push Docker image
               uses: docker/build-push-action@v5

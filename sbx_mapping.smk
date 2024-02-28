@@ -93,7 +93,7 @@ rule build_genome_index:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input} 2>&1 | tee {log}"
 
@@ -114,7 +114,7 @@ rule align_to_genome:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         """
         bwa mem -M -t {threads} \
@@ -138,7 +138,7 @@ rule samtools_convert:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         """
         samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} 2>&1 | tee {log.view_log} | \
@@ -157,7 +157,7 @@ rule filter_aln_quality:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     script:
         "scripts/filter_aln_quality.py"
 
@@ -174,7 +174,7 @@ rule samtools_index:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         "samtools index {input} {output} 2>&1 | tee {log}"
 
@@ -197,7 +197,7 @@ rule get_sliding_coverage:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     script:
         "scripts/get_sliding_coverage.py"
 
@@ -236,7 +236,7 @@ rule get_coverage_filtered:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     script:
         "scripts/samtools_get_coverage.py"
 
@@ -266,7 +266,7 @@ rule summarize_num_mapped_reads:
     conda:
         "envs/sbx_mapping_env.yml"
     container:
-        f"docker://sunbeam-labs/sbx_mapping:{SBX_MAPPING_VERSION}"
+        f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         """
         samtools idxstats {input} | (sed 's/^/{wildcards.sample}\t/') > {output}
