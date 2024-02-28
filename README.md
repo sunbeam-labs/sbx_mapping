@@ -4,6 +4,7 @@
 
 <!-- badges: start -->
 [![Tests](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/tests.yml/badge.svg)](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/tests.yml)
+[![DockerHub](https://img.shields.io/docker/pulls/sunbeamlabs/sbx_mapping)](https://hub.docker.com/repository/docker/sunbeamlabs/sbx_mapping/)
 <!-- badges: end -->
 
 A [Sunbeam](https://github.com/sunbeam-labs/sunbeam) extension for mapping reads against a set of reference genomes.
