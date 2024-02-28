@@ -78,6 +78,8 @@ rule build_genome_index:
         LOG_FP / "build_genome_index_{genome}.log",
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     shell:
         "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input} 2>&1 | tee {log}"
 
@@ -97,6 +99,8 @@ rule align_to_genome:
     threads: 4
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     shell:
         """
         bwa mem -M -t {threads} \
@@ -119,6 +123,8 @@ rule samtools_convert:
     threads: 4
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     shell:
         """
         samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} 2>&1 | tee {log.view_log} | \
@@ -136,6 +142,8 @@ rule filter_aln_quality:
         percIdentity=Cfg["sbx_mapping"]["percIdentity"],
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     script:
         "scripts/filter_aln_quality.py"
 
@@ -151,6 +159,8 @@ rule samtools_index:
         LOG_FP / "samtools_index_{genome}_{sample}.log",
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     shell:
         "samtools index {input} {output} 2>&1 | tee {log}"
 
@@ -172,6 +182,8 @@ rule get_sliding_coverage:
         sampling=Cfg["sbx_mapping"]["sampling"],
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     script:
         "scripts/get_sliding_coverage.py"
 
@@ -209,6 +221,8 @@ rule get_coverage_filtered:
         LOG_FP / "get_coverage_filtered_{genome}_{sample}.log",
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     script:
         "scripts/samtools_get_coverage.py"
 
@@ -237,6 +251,8 @@ rule summarize_num_mapped_reads:
         MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_numReads.tsv",
     conda:
         "envs/sbx_mapping_env.yml"
+    container:
+        "docker://ctbushman/sbx_mapping:0.0.0"
     shell:
         """
         samtools idxstats {input} | (sed 's/^/{wildcards.sample}\t/') > {output}
