@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Test with Sunbeam
         uses: sunbeam-labs/sbx_test_action@v1

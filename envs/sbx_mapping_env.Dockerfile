@@ -10,7 +10,7 @@ RUN conda env create --file sbx_mapping_env.yml --name sbx_mapping
 
 ENV PATH="/opt/conda/envs/sbx_mapping/bin/:${PATH}"
 
-# Make sure the environment is working
+# "Activate" the environment
 SHELL ["conda", "run", "-n", "sbx_mapping", "/bin/bash", "-c"]
 
 # Run

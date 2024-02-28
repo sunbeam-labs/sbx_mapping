@@ -1,3 +1,4 @@
 .tests/data/hosts/*.fasta.*
 .tests/data/ref/*.fasta.*
 __pycache__
+.snakemake/
