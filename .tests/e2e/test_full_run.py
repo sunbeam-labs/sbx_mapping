@@ -1,5 +1,6 @@
 import os
 
+
 def test_full_run(run_sunbeam):
     (
         bfragilis_sliding_cov_fp,

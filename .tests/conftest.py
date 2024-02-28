@@ -4,6 +4,7 @@ import shutil
 import subprocess as sp
 import sys
 
+
 @pytest.fixture
 def setup(tmpdir):
     reads_fp = os.path.abspath(".tests/data/reads/")
@@ -17,7 +18,9 @@ def setup(tmpdir):
     else:
         profile_list = []
 
-    sp.check_output(["sunbeam", "init", "--data_fp", reads_fp, project_dir] + profile_list)
+    sp.check_output(
+        ["sunbeam", "init", "--data_fp", reads_fp, project_dir] + profile_list
+    )
 
     config_fp = os.path.join(project_dir, "sunbeam_config.yml")
 
