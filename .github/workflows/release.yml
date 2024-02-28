@@ -79,6 +79,7 @@ jobs:
       steps:
         - name: Checkout Code
           uses: actions/checkout@v4
+          needs: build-and-push-to-dockerhub
 
         - name: Set test env
           run: echo "SUNBEAM_TEST_PROFILE=apptainer" >> $GITHUB_ENV

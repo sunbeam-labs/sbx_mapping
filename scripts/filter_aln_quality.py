@@ -1,3 +1,4 @@
+# from scripts.filter_aln_quality_f import filter_bam_alignments
 import pysam
 import re
 
