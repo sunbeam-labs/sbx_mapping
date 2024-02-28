@@ -4,7 +4,6 @@
 
 <!-- badges: start -->
 [![Tests](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/tests.yml/badge.svg)](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/tests.yml)
-[![Super-Linter](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/linter.yml/badge.svg)](https://github.com/sunbeam-labs/sbx_mapping/actions/workflows/linter.yml)
 <!-- badges: end -->
 
 A [Sunbeam](https://github.com/sunbeam-labs/sunbeam) extension for mapping reads against a set of reference genomes.
