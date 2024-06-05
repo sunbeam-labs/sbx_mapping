@@ -28,13 +28,14 @@ except NameError:
         GenomeFiles = []
         GenomeSegments = {}
     else:
-        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")] + [
-            f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fa")
-        ]
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+        if not GenomeFiles:
+            GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fa")]
         GenomeSegments = {
             PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
             for g in GenomeFiles
         }
+        GenomeFiles = {PurePath(g.name).stem: g for g in GenomeFiles}
     sys.stderr.write("done.\n")
     sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
@@ -102,8 +103,8 @@ rule build_genome_index:
 
 rule align_to_genome:
     input:
+        *rules.build_genome_index.output,
         reads=expand(QC_FP / "decontam" / "{{sample}}_{rp}.fastq.gz", rp=Pairs),
-        index=Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta.amb",
     output:
         temp(MAPPING_FP / "intermediates" / "{genome}" / "{sample}.sam"),
     benchmark:
