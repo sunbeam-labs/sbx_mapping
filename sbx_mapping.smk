@@ -15,26 +15,26 @@ def get_mapping_path() -> Path:
 
 
 SBX_MAPPING_VERSION = open(get_mapping_path() / "VERSION").read().strip()
-
-try:
-    GenomeFiles
-    GenomeSegments
-except NameError:
-    sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
-    if (
-        Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
-        or not Cfg["sbx_mapping"]["genomes_fp"]
-    ):
-        GenomeFiles = []
-        GenomeSegments = {}
-    else:
-        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
-        GenomeSegments = {
-            PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
-            for g in GenomeFiles
-        }
-    sys.stderr.write("done.\n")
-    sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
+HOST_FILE_EXT = ".fasta"
+sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
+if (
+    Cfg["sbx_mapping"]["genomes_fp"] == Cfg["all"]["root"]
+    or not Cfg["sbx_mapping"]["genomes_fp"]
+):
+    GenomeFiles = []
+    GenomeSegments = {}
+else:
+    GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+    if not GenomeFiles:
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fa")]
+        HOST_FILE_EXT = ".fa"
+    GenomeSegments = {
+        PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
+        for g in GenomeFiles
+    }
+    GenomeFiles = {PurePath(g.name).stem: g for g in GenomeFiles}
+sys.stderr.write("done.\n")
+sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
 
 try:
@@ -80,10 +80,10 @@ rule all_mapping:
 
 rule build_genome_index:
     input:
-        Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta",
+        Cfg["sbx_mapping"]["genomes_fp"] / ("{genome}" + HOST_FILE_EXT),
     output:
         [
-            Cfg["sbx_mapping"]["genomes_fp"] / ("{genome}.fasta." + ext)
+            Cfg["sbx_mapping"]["genomes_fp"] / ("{genome}" + HOST_FILE_EXT + "." + ext)
             for ext in ["amb", "ann", "bwt", "pac", "sa"]
         ],
     benchmark:
@@ -100,8 +100,8 @@ rule build_genome_index:
 
 rule align_to_genome:
     input:
+        *rules.build_genome_index.output,
         reads=expand(QC_FP / "decontam" / "{{sample}}_{rp}.fastq.gz", rp=Pairs),
-        index=Cfg["sbx_mapping"]["genomes_fp"] / "{genome}.fasta.amb",
     output:
         temp(MAPPING_FP / "intermediates" / "{genome}" / "{sample}.sam"),
     benchmark:
@@ -110,6 +110,7 @@ rule align_to_genome:
         LOG_FP / "align_to_genome_{genome}_{sample}.log",
     params:
         index_fp=Cfg["sbx_mapping"]["genomes_fp"],
+        host_file_ext=HOST_FILE_EXT,
     threads: 4
     conda:
         "envs/sbx_mapping_env.yml"
@@ -118,7 +119,7 @@ rule align_to_genome:
     shell:
         """
         bwa mem -M -t {threads} \
-        {params.index_fp}/{wildcards.genome}.fasta \
+        {params.index_fp}/{wildcards.genome}{params.host_file_ext} \
         {input.reads} -o {output} \
         2>&1 | tee {log}
         """
