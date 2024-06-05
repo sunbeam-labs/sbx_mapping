@@ -28,7 +28,9 @@ except NameError:
         GenomeFiles = []
         GenomeSegments = {}
     else:
-        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")]
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fasta")] + [
+            f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fa")
+        ]
         GenomeSegments = {
             PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
             for g in GenomeFiles
