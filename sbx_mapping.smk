@@ -28,6 +28,9 @@ else:
     if not GenomeFiles:
         GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fa")]
         HOST_FILE_EXT = ".fa"
+    if not GenomeFiles:
+        GenomeFiles = [f for f in Cfg["sbx_mapping"]["genomes_fp"].glob("*.fna")]
+        HOST_FILE_EXT = ".fna"
     GenomeSegments = {
         PurePath(g.name).stem: read_seq_ids(Cfg["sbx_mapping"]["genomes_fp"] / g)
         for g in GenomeFiles
