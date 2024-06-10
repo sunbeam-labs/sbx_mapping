@@ -50,9 +50,6 @@ except NameError:
     LOG_FP = output_subdir(Cfg, "logs")
 
 
-ruleorder: build_host_index > build_genome_index
-
-
 localrules:
     all_mapping,
 
