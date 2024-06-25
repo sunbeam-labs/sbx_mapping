@@ -16,7 +16,10 @@ def get_mapping_path() -> Path:
 
 SBX_MAPPING_VERSION = open(get_mapping_path() / "VERSION").read().strip()
 
-if Cfg["qc"]["host_fp"] == Cfg["sbx_mapping"]["genomes_fp"]:
+if (
+    Cfg["qc"]["host_fp"] == Cfg["sbx_mapping"]["genomes_fp"]
+    and Cfg["qc"]["host_fp"] != Cfg["all"]["root"]
+):
     raise ValueError("sbx_mapping::ERROR: Host and target genomes cannot be the same")
 
 HOST_FILE_EXT = ".fasta"
