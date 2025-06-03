@@ -15,7 +15,7 @@ if (
     raise ValueError("sbx_mapping::ERROR: Host and target genomes cannot be the same")
 
 
-def read_seq_ids(fasta_fp: str) -> List[Tuple[str, str]]:
+def read_seq_ids(fasta_fp: str) -> list[tuple[str, str]]:
     """
     Return the sequence identifiers for a given fasta filepath.
     """

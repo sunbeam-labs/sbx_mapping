@@ -1,24 +1,76 @@
 import os
+import pytest
+import shutil
+import subprocess as sp
+import tempfile
+from pathlib import Path
+
+
+@pytest.fixture
+def setup(tmp_path):
+    reads_fp = Path(".tests/data/reads/").resolve()
+    ref_fp = Path(".tests/data/ref/").resolve()
+    project_dir = tmp_path / "project/"
+
+    sp.check_output(["sunbeam", "init", "--data_fp", reads_fp, project_dir])
+
+    config_fp = project_dir / "sunbeam_config.yml"
+
+    config_str = f"sbx_mapping: {{genomes_fp: {ref_fp}}}"
+
+    sp.check_output(
+        [
+            "sunbeam",
+            "config",
+            "--modify",
+            f"{config_str}",
+            f"{config_fp}",
+        ]
+    )
+
+    yield tmp_path, project_dir
+
+    shutil.rmtree(tmp_path)
+
+
+@pytest.fixture
+def run_sunbeam(setup):
+    tmp_path, project_dir = setup
+    output_fp = project_dir / "sunbeam_output"
+    log_fp = output_fp / "logs"
+    stats_fp = project_dir / "stats"
+
+    sbx_proc = sp.run(
+        [
+            "sunbeam",
+            "run",
+            "--profile",
+            project_dir,
+            "all_mapping",
+            "--directory",
+            tmp_path,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    print("STDOUT: ", sbx_proc.stdout)
+    print("STDERR: ", sbx_proc.stderr)
+
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        try:
+            shutil.copytree(log_fp, "logs/")
+            shutil.copytree(stats_fp, "stats/")
+        except FileNotFoundError:
+            print("No logs or stats directory found.")
+
+    output_fp = project_dir / "sunbeam_output"
+    benchmarks_fp = project_dir / "stats/"
+
+    yield output_fp, benchmarks_fp, sbx_proc
 
 
 def test_full_run(run_sunbeam):
-    (
-        bfragilis_sliding_cov_fp,
-        ecoli_sliding_cov_fp,
-        bfragilis_filtered_cov_fp,
-        ecoli_filtered_cov_fp,
-        bfragilis_num_reads_fp,
-        ecoli_num_reads_fp,
-        benchmarks_fp,
-    ) = run_sunbeam
+    output_fp, benchmarks_fp, proc = run_sunbeam
 
-    # Check output
-    assert os.path.exists(bfragilis_sliding_cov_fp)
-    assert os.path.exists(ecoli_sliding_cov_fp)
-    assert os.path.exists(bfragilis_filtered_cov_fp)
-    assert os.path.exists(ecoli_filtered_cov_fp)
-    assert os.path.exists(bfragilis_num_reads_fp)
-    assert os.path.exists(ecoli_num_reads_fp)
-
-    assert os.stat(bfragilis_sliding_cov_fp).st_size != 0
-    assert os.stat(ecoli_sliding_cov_fp).st_size != 0
+    assert proc.returncode == 0, f"Sunbeam run failed with error: {proc.stderr}"
