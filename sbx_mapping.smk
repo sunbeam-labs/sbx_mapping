@@ -1,26 +1,27 @@
-# -*- mode: Snakemake -*-
-
-import sys
-import os
-from pathlib import Path
+from pathlib import PurePath
+from sunbeam.bfx.parse import parse_fasta
 
 
-def get_mapping_path() -> Path:
-    for fp in sys.path:
-        if fp.split("/")[-1] == "sbx_mapping":
-            return Path(fp)
-    raise Error(
-        "Filepath for sbx_mapping not found, are you sure it's installed under extensions/sbx_mapping?"
-    )
-
-
-SBX_MAPPING_VERSION = open(get_mapping_path() / "VERSION").read().strip()
+try:
+    SBX_MAPPING_VERSION = get_ext_version("sbx_mapping")
+except NameError:
+    # For backwards compatibility with older versions of Sunbeam
+    SBX_MAPPING_VERSION = "0.0.0"
 
 if (
     Cfg["qc"]["host_fp"] == Cfg["sbx_mapping"]["genomes_fp"]
     and Cfg["qc"]["host_fp"] != Cfg["all"]["root"]
 ):
     raise ValueError("sbx_mapping::ERROR: Host and target genomes cannot be the same")
+
+
+def read_seq_ids(fasta_fp: str) -> List[Tuple[str, str]]:
+    """
+    Return the sequence identifiers for a given fasta filepath.
+    """
+    with open(fasta_fp) as f:
+        return list(parse_fasta(f))
+
 
 HOST_FILE_EXT = ".fasta"
 sys.stderr.write("sbx_mapping::INFO Collecting target genomes... ")
@@ -47,42 +48,24 @@ sys.stderr.write("done.\n")
 sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
 
 
-try:
-    BENCHMARK_FP
-except NameError:
-    BENCHMARK_FP = output_subdir(Cfg, "benchmarks")
-try:
-    LOG_FP
-except NameError:
-    LOG_FP = output_subdir(Cfg, "logs")
-
-
 localrules:
     all_mapping,
 
 
-TARGET_MAPPING = [
-    expand(
-        MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
-        genome=GenomeSegments.keys(),
-    ),
-    expand(
-        MAPPING_FP / "filtered" / "{genome}" / "numReads.tsv",
-        genome=GenomeSegments.keys(),
-    ),
-    expand(
-        MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
-        genome=GenomeSegments.keys(),
-    ),
-]
-
-
 rule all_mapping:
     input:
-        TARGET_MAPPING,
-
-
-### Prepping BAM files ###
+        expand(
+            MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
+            genome=GenomeSegments.keys(),
+        ),
+        expand(
+            MAPPING_FP / "filtered" / "{genome}" / "numReads.tsv",
+            genome=GenomeSegments.keys(),
+        ),
+        expand(
+            MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
+            genome=GenomeSegments.keys(),
+        ),
 
 
 rule build_genome_index:
@@ -102,7 +85,10 @@ rule build_genome_index:
     container:
         f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
-        "cd {Cfg[sbx_mapping][genomes_fp]} && bwa index {input} 2>&1 | tee {log}"
+        """
+        cd $(dirname {input})
+        bwa index {input} > {log} 2>&1
+        """
 
 
 rule align_to_genome:
@@ -128,7 +114,7 @@ rule align_to_genome:
         bwa mem -M -t {threads} \
         {params.index_fp}/{wildcards.genome}{params.host_file_ext} \
         {input.reads} -o {output} \
-        2>&1 | tee {log}
+        > {log} 2>&1
         """
 
 
@@ -140,8 +126,7 @@ rule samtools_convert:
     benchmark:
         BENCHMARK_FP / "samtools_convert_{genome}_{sample}.tsv"
     log:
-        view_log=LOG_FP / "samtools_convert_view_{genome}_{sample}.log",
-        sort_log=LOG_FP / "samtools_convert_sort_{genome}_{sample}.log",
+        LOG_FP / "samtools_convert_{genome}_{sample}.log",
     threads: 4
     conda:
         "envs/sbx_mapping_env.yml"
@@ -149,8 +134,10 @@ rule samtools_convert:
         f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         """
-        samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} 2>&1 | tee {log.view_log} | \
-        samtools sort -@ {threads} -o {output} -O bam 2>&1 | tee {log.sort_log}
+        (
+            samtools view -@ {threads} -b {Cfg[sbx_mapping][samtools_opts]} {input} | \
+            samtools sort -@ {threads} -o {output} -O bam
+        ) > {log} 2>&1
         """
 
 
@@ -184,10 +171,7 @@ rule samtools_index:
     container:
         f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
-        "samtools index {input} {output} 2>&1 | tee {log}"
-
-
-### Calculate sliding window coverage stats ###
+        "samtools index {input} {output} > {log} 2>&1"
 
 
 rule get_sliding_coverage:
@@ -224,11 +208,12 @@ rule summarize_sliding_coverage:
         ),
     output:
         MAPPING_FP / "filtered" / "{genome}" / "sliding_coverage.csv",
+    benchmark:
+        BENCHMARK_FP / "summarize_sliding_coverage_{genome}.tsv"
+    log:
+        LOG_FP / "summarize_sliding_coverage_{genome}.log",
     shell:
-        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
-
-
-### Get filtered coverage stats ###
+        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output} 2> {log}"
 
 
 rule get_coverage_filtered:
@@ -259,11 +244,12 @@ rule samtools_summarize_filtered_coverage:
         ),
     output:
         MAPPING_FP / "filtered" / "{genome}" / "coverage_filtered.csv",
+    benchmark:
+        BENCHMARK_FP / "samtools_summarize_filtered_coverage_{genome}.tsv"
+    log:
+        LOG_FP / "samtools_summarize_filtered_coverage_{genome}.log",
     shell:
-        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output}"
-
-
-### Get number of mapped reads ###
+        "(head -n 1 {input[0]}; tail -q -n +2 {input}) > {output} 2> {log}"
 
 
 rule summarize_num_mapped_reads:
@@ -277,7 +263,11 @@ rule summarize_num_mapped_reads:
         f"docker://sunbeamlabs/sbx_mapping:{SBX_MAPPING_VERSION}"
     shell:
         """
-        samtools idxstats {input} | (sed 's/^/{wildcards.sample}\t/') > {output}
+        (
+            samtools idxstats {input} | \
+            (sed 's/^/{wildcards.sample}\t/') \
+            > {output}
+        ) > {log} 2>&1
         """
 
 

@@ -6,6 +6,5 @@ dependencies:
   - bcftools
   - bwa
   - numpy
-  #- python =3.12
   - pysam
   - samtools
