@@ -44,8 +44,10 @@ else:
         for g in GenomeFiles
     }
     GenomeFiles = {PurePath(g.name).stem: g for g in GenomeFiles}
-sys.stderr.write("done.\n")
 sys.stderr.write(f"sbx_mapping::INFO Genome files found: {str(GenomeFiles)}\n")
+sys.stderr.write(
+    f"sbx_mapping::INFO Genome segments found: {str({k: [(x[0], len(x[1])) for x in v] for k, v in GenomeSegments.items()})}\n"
+)
 
 
 localrules:
