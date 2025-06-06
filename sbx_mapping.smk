@@ -259,6 +259,10 @@ rule summarize_num_mapped_reads:
         MAPPING_FP / "filtered" / "{genome}" / "{sample}.bam",
     output:
         MAPPING_FP / "filtered" / "intermediates" / "{genome}" / "{sample}_numReads.tsv",
+    benchmark:
+        BENCHMARK_FP / "summarize_num_mapped_reads_{genome}_{sample}.tsv"
+    log:
+        LOG_FP / "summarize_num_mapped_reads_{genome}_{sample}.log",
     conda:
         "envs/sbx_mapping_env.yml"
     container:
