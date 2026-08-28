@@ -13,7 +13,7 @@ A [Sunbeam](https://github.com/sunbeam-labs/sunbeam) extension for mapping reads
 
 ## Config
 
-  - genomes_fp: Is the filepath to your reference genomes (in fasta format) **all references must have .fasta OR .fa OR .fna extension!!**
+  - genomes_fp: Is the filepath to the *DIRECTORY* containing your reference genomes (in fasta format) **all references must have .fasta OR .fa OR .fna extension!!**
   - samtools_opts: Are the options passed to samtools view
   - alnLen: Is the minimum alignment length
   - percIdentity: Is the minimum percent identity
